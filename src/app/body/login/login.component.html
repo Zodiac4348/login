@@ -1,0 +1,19 @@
+<div class="container-fluid">
+    <div class="row login-card">
+        <div class="col-xl-5">
+            <div class="rounded border border-light">
+                <div class="login-items" *ngFor="let item of loginLabels">
+                    <div class="form-group">
+                        <label for="itemType">{{item.label}}</label>
+                        <input [type]="item.type" class="form-control" [aria-label]="item.label" [placeholder]="item.label"
+                        (input)="getInput(item.type, $event.target.value)">
+                        <small class="form-text text-muted" *ngIf="item.type == 'password'">{{passwordDesc}}</small>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" type="submit" (click)="submit()">SUBMIT</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
