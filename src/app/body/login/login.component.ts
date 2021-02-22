@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -7,36 +8,26 @@ import { Component, OnInit } from '@angular/core';
 })
 export class LoginComponent implements OnInit {
 
-  loginLabels = [
-    { label: 'Username', type: 'text' },
-    { label: 'Password', type: 'password' },
-  ];
   username: string;
   password: string;
-  passwordDesc: string = "Password must be between 6 to 12 characters.";
+  isUsernameValid: boolean = true;
+  isPasswordValid: boolean = true;
 
-  constructor() { }
+  constructor(
+    private router: Router
+  ) { }
 
   ngOnInit(): void {
   }
 
-  getInput(type: string, input: string): void {
-    if(type == 'text') {
-      this.username = input;
-    } else if(type == 'password') {
-      this.password = input;
-    }
-  }
-
   submit(): void {
-    console.log('USERNAME: ', this.username);
-    console.log('PASSWORD: ', this.password);
+    this.isUsernameValid = this.username.match(/^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/gi)?
+      true: false;
+    this.isPasswordValid = this.password.length >= 6 && this.password.length <= 20;
 
-    if(this.username && this.password) {
-      alert('success');
-    } else {
-      alert('fail');
-    }
+    if(this.isUsernameValid && this.isPasswordValid) {
+      this.router.navigate(['home']);
+    } 
   }
 
 }
