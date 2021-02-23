@@ -1,4 +1,10 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { Store } from '@ngrx/store';
+import { AppState } from 'src/app/app.state';
+import { LoginService } from 'src/app/services/login/login.service';
+import * as LoginAction from 'src/app/store/actions/login.action';
+import { LoginDetails } from 'src/app/model/logindetails.model';
 
 @Component({
   selector: 'app-login',
@@ -7,36 +13,65 @@ import { Component, OnInit } from '@angular/core';
 })
 export class LoginComponent implements OnInit {
 
-  loginLabels = [
-    { label: 'Username', type: 'text' },
-    { label: 'Password', type: 'password' },
-  ];
   username: string;
   password: string;
-  passwordDesc: string = "Password must be between 6 to 12 characters.";
+  isUsernameValid: boolean = true;
+  isPasswordValid: boolean = true;
+  validLoginCredential: boolean = true;
 
-  constructor() { }
-
-  ngOnInit(): void {
+  constructor(
+    private router: Router,
+    private store: Store<AppState>
+  ) { 
+    
   }
 
-  getInput(type: string, input: string): void {
-    if(type == 'text') {
-      this.username = input;
-    } else if(type == 'password') {
-      this.password = input;
-    }
+  ngOnInit(): void {
+    this.checkUserCredentials();
+  }
+
+  checkUserCredentials(): void {
+    this.store.select<any>('login').subscribe(data => {
+      if(data.length > 0) {
+        this.router.navigate(['home']);
+      }
+    });
   }
 
   submit(): void {
-    console.log('USERNAME: ', this.username);
-    console.log('PASSWORD: ', this.password);
+    this.isUsernameValid = this.username.match(/^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/gi)?
+      true: false;
+    this.isPasswordValid = this.password.length >= 6 && this.password.length <= 20;
 
-    if(this.username && this.password) {
-      alert('success');
-    } else {
-      alert('fail');
-    }
+    if(this.isUsernameValid && this.isPasswordValid) {
+      let loginDetails: LoginDetails = {
+        username: this.username,
+        password: this.password
+      }
+
+      this.store.dispatch(new LoginAction.AddLogin(loginDetails));
+      this.router.navigate(['home']);
+    } 
   }
+
+  // getLoginDetaisl() {
+  //   this.loginService.getLoginDetails().subscribe(data => {
+  //     this.validLoginCredential = true;
+  //     let validLogin: boolean = false;
+
+  //     if(data.length > 0) {
+  //       data.forEach(d => {
+  //         if(d['username'] == this.username && d['password'] == this.password) {
+  //           validLogin = true;
+  //           this.router.navigate(['home']);
+  //         }
+  //       });
+  //     }
+
+  //     if(!validLogin) {
+  //       this.validLoginCredential = false;
+  //     }
+  //   });
+  // }
 
 }
