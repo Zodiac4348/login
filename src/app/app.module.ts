@@ -7,6 +7,9 @@ import { AppRoutingModule } from './app-routing.module';
 import { FormsModule } from '@angular/forms';
 import { HomeComponent } from './body/home/home.component';
 import { RouterModule } from '@angular/router';
+import { StoreModule, ReducerManager, ReducerManagerDispatcher } from '@ngrx/store';
+import { reducer } from 'src/app/store/reducers/login.reducer';
+import { LoginService } from './services/login/login.service';
 
 @NgModule({
   declarations: [
@@ -18,9 +21,14 @@ import { RouterModule } from '@angular/router';
     BrowserModule,
     AppRoutingModule,
     RouterModule,
-    FormsModule
+    FormsModule,
+    StoreModule.forRoot({
+      login: reducer
+    })
   ],
-  providers: [],
+  providers: [
+    LoginService
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
