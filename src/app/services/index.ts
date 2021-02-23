@@ -4,7 +4,7 @@ export const UserCredentials = [
         password: 'password123'
     },
     {
-        username: 'username1@example.com',
+        username: 'username2@example.com',
         password: 'pass123'
     },
 ]

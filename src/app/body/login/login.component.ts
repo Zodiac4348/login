@@ -21,7 +21,8 @@ export class LoginComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private store: Store<AppState>
+    private store: Store<AppState>,
+    private loginService: LoginService
   ) { 
     
   }
@@ -39,39 +40,50 @@ export class LoginComponent implements OnInit {
   }
 
   submit(): void {
-    this.isUsernameValid = this.username.match(/^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/gi)?
+    this.validLoginCredential = true;
+
+    if(this.username) {
+      this.isUsernameValid = this.username?.match(/^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/gi)?
       true: false;
-    this.isPasswordValid = this.password.length >= 6 && this.password.length <= 20;
+    } else {
+      this.isUsernameValid = true;
+    }
 
-    if(this.isUsernameValid && this.isPasswordValid) {
-      let loginDetails: LoginDetails = {
-        username: this.username,
-        password: this.password
-      }
+    if(this.password) {
+      this.isPasswordValid = this.password?.length >= 6 && this.password?.length <= 20;
+    } else {
+      this.isPasswordValid = true;
+    }
 
-      this.store.dispatch(new LoginAction.AddLogin(loginDetails));
-      this.router.navigate(['home']);
+    if((this.isUsernameValid && this.username) && (this.isPasswordValid && this.password)) {
+      this.getLoginDetaisl();
     } 
   }
 
-  // getLoginDetaisl() {
-  //   this.loginService.getLoginDetails().subscribe(data => {
-  //     this.validLoginCredential = true;
-  //     let validLogin: boolean = false;
+  getLoginDetaisl() {
+    this.loginService.getLoginDetails().subscribe(data => {
+      let validLogin: boolean = false;
 
-  //     if(data.length > 0) {
-  //       data.forEach(d => {
-  //         if(d['username'] == this.username && d['password'] == this.password) {
-  //           validLogin = true;
-  //           this.router.navigate(['home']);
-  //         }
-  //       });
-  //     }
+      if(data.length > 0) {
+        data.forEach(d => {
+          if(d['username'] == this.username && d['password'] == this.password) {
+            validLogin = true;
+          }
+        });
+      }
 
-  //     if(!validLogin) {
-  //       this.validLoginCredential = false;
-  //     }
-  //   });
-  // }
+      if(!validLogin) {
+        this.validLoginCredential = false;
+      } else {
+        let loginDetails: LoginDetails = {
+          username: this.username,
+          password: this.password
+        }
+
+        this.store.dispatch(new LoginAction.AddLogin(loginDetails));
+        this.router.navigate(['home']);
+      }
+    });
+  }
 
 }
