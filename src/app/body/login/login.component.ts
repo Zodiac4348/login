@@ -18,29 +18,27 @@ export class LoginComponent implements OnInit {
   isUsernameValid: boolean = true;
   isPasswordValid: boolean = true;
   validLoginCredential: boolean = true;
+  userCredentials: any = null;
+  doubleCheck: boolean;
 
   constructor(
     private router: Router,
     private store: Store<AppState>,
     private loginService: LoginService
   ) { 
-    
+    this.store.select<any>('login').subscribe(data => {
+      if(data && data.length > 0) {
+        this.userCredentials = data;
+      } 
+    });
   }
 
   ngOnInit(): void {
-    this.checkUserCredentials();
-  }
-
-  checkUserCredentials(): void {
-    this.store.select<any>('login').subscribe(data => {
-      if(data.length > 0) {
-        this.router.navigate(['home']);
-      }
-    });
   }
 
   submit(): void {
     this.validLoginCredential = true;
+    this.doubleCheck = false;
 
     if(this.username) {
       this.isUsernameValid = this.username?.match(/^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/gi)?
@@ -56,34 +54,54 @@ export class LoginComponent implements OnInit {
     }
 
     if((this.isUsernameValid && this.username) && (this.isPasswordValid && this.password)) {
-      this.getLoginDetaisl();
+      if(this.userCredentials) {
+        this.checkCredentials(this.userCredentials);
+      } else {
+        this.getLoginDetaisl();
+      }
     } 
   }
 
   getLoginDetaisl() {
     this.loginService.getLoginDetails().subscribe(data => {
-      let validLogin: boolean = false;
+      this.checkCredentials(data, true);
+    });
+  }
 
-      if(data.length > 0) {
-        data.forEach(d => {
-          if(d['username'] == this.username && d['password'] == this.password) {
-            validLogin = true;
-          }
-        });
-      }
+  checkCredentials(data: any, apiCall?: boolean): void {
+    let validLogin: boolean = false;
 
-      if(!validLogin) {
-        this.validLoginCredential = false;
-      } else {
+    if(data?.length > 0) {
+      data.forEach(d => {
+        if(d['username'] == this.username && d['password'] == this.password) {
+          validLogin = true;
+        }
+      });
+    }
+
+    if(validLogin) {
+      if(apiCall) {
         let loginDetails: LoginDetails = {
           username: this.username,
           password: this.password
         }
-
+  
         this.store.dispatch(new LoginAction.AddLogin(loginDetails));
-        this.router.navigate(['home']);
       }
-    });
+      
+      this.router.navigate(['home']);
+    } else {
+      this.validateCredentials();
+    }
+  }
+
+  validateCredentials(): void {
+    if(this.doubleCheck) {
+      this.validLoginCredential = false;
+    } else {
+      this.doubleCheck = true;
+      this.getLoginDetaisl();
+    }
   }
 
 }
